@@ -247,3 +247,67 @@ function renderTimeline(){
   const a=sorted(filtered());
   let rows=monthHeader();
   let lastFleet="";
+  for(const v of a){
+    if(v.f!==lastFleet){rows+=`<div class="tl-row"><div class="fleet-sep">${v.f.toUpperCase()} FLEET</div></div>`;lastFleet=v.f;}
+    let bars="";
+    const tip=`${v.n} — ${TYPES[v.t]} ${fmt(v.d)} dwt\n${v.c} ${v.r}\nRedelivery: ${v.w}${v.note?'\n'+v.note:''}${v.dd?'\nDrydock: '+ddLabel(v):''}`;
+    if(v.rf){
+      bars+=`<div class="bar ${v.t}" style="left:0;width:${pct(v.rf)}%;background:${COLORS[v.t]}" title="${tip}">${v.c} ${v.r}</div>`;
+      bars+=`<div class="bar opt" style="left:${pct(v.rf)}%;width:${pct(v.rt)-pct(v.rf)}%" title="Optional period → latest redelivery ${v.w.split('–')[1]||''}"></div>`;
+    }else if(v.dely){
+      bars+=`<div class="bar dely" style="left:${pct(v.dely[0])}%;width:${pct(v.dely[1])-pct(v.dely[0])}%" title="${v.n}: expected delivery ${v.b}">DELY ${v.b}</div>`;
+    }
+    (v.off||[]).forEach(([a1,b1])=>{
+      bars+=`<div class="bar offh" style="left:${pct(a1)}%;width:${pct(b1)-pct(a1)}%" title="${v.n}: added off-hire period"></div>`;});
+    if(v.etr) bars+=`<div class="bar etr" style="left:${pct(v.etr)}%" title="${v.n}: probable redelivery ${v.etr}"></div>`;
+    (v.dd||[]).forEach(([a1,b1])=>{
+      bars+=`<div class="bar dd" style="left:${pct(a1)}%;width:${pct(b1)-pct(a1)}%" title="${v.n}: drydock / repairs ${ddLabel(v)}">DD</div>`;});
+    bars+=`<div class="today" style="left:${(TODAY-T0)/SPAN*100}%"></div>`;
+    rows+=`<div class="tl-row">
+      <div class="tl-label ${v.dwm?'dwm':''}" title="${tip}">${v.n}<small>${fmt(v.d)} dwt · ${v.b}</small></div>
+      <div class="tl-track">${bars}</div></div>`;
+  }
+  document.getElementById("viewTl").innerHTML=`<div class="tl">${rows}</div>`;
+}
+
+function renderTable(){
+  const a=sorted(filtered());
+  const cols=[["n","Vessel"],["f","Fleet"],["t","Segment"],["c","Charterer"],["rateN","Gross rate"],["rf","Redelivery window"],["ddS","Drydock"],["y","Shipyard"],["d","DWT"],["b","Built"],["cl","Class"],["fl","Flag"]];
+  a.forEach(v=>v.ddS=v.dd?v.dd[v.dd.length-1][0]:"");
+  let h="<tr>"+cols.map(([k,l])=>`<th data-k="${k}">${l} ${sortKey===k?`<span class="arr">${sortDir>0?"▲":"▼"}</span>`:""}</th>`).join("")+"</tr>";
+  let lastFleet="", b="";
+  for(const v of a){
+    if(v.f!==lastFleet){b+=`<tr class="sep"><td colspan="12">${v.f.toUpperCase()} FLEET</td></tr>`;lastFleet=v.f;}
+    b+=`<tr>
+      <td class="vname ${v.dwm?'dwm':''}">${v.n}${v.dwm?' *':''}</td>
+      <td>${v.f}</td>
+      <td><span class="pill ${v.t}">${TYPES[v.t]}</span></td>
+      <td>${v.c}</td>
+      <td class="rate">${v.r||"—"}</td>
+      <td>${v.w}${v.note?`<span class="small note">${v.note}</span>`:""}</td>
+      <td class="ddcell">${ddLabel(v)||"—"}</td>
+      <td>${v.y}</td>
+      <td class="num">${fmt(v.d)}</td>
+      <td>${v.b}</td><td>${v.cl}</td><td>${v.fl}</td></tr>`;
+  }
+  document.getElementById("viewTb").innerHTML=`<table><thead>${h}</thead><tbody>${b}</tbody></table>
+    <p style="margin-top:8px;font-size:11px;color:var(--muted)">* managed by DWM · drydock dates digitised from the chart (±a few days)</p>`;
+  document.querySelectorAll("th").forEach(th=>th.onclick=()=>{
+    const k=th.dataset.k;
+    if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=1;}
+    renderTable();
+  });
+}
+
+function render(){renderStats();view==="tl"?renderTimeline():renderTable();}
+["q","fFleet","fType","fDwm","fDd"].forEach(id=>document.getElementById(id).addEventListener("input",render));
+document.getElementById("tabTl").onclick=()=>{view="tl";
+  document.getElementById("tabTl").classList.add("on");document.getElementById("tabTb").classList.remove("on");
+  document.getElementById("viewTl").style.display="";document.getElementById("viewTb").style.display="none";render();};
+document.getElementById("tabTb").onclick=()=>{view="tb";
+  document.getElementById("tabTb").classList.add("on");document.getElementById("tabTl").classList.remove("on");
+  document.getElementById("viewTb").style.display="";document.getElementById("viewTl").style.display="none";render();};
+render();
+</script>
+</body>
+</html>
