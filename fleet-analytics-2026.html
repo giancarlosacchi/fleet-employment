@@ -23,8 +23,8 @@
   .panel h2{font-size:15px;color:var(--accent);margin-bottom:2px}
   .why{font-size:12.5px;color:var(--muted);margin-bottom:10px}
   .why b{color:#3b4a5e}
-  .ch{position:relative;height:300px}
-  .panel.wide .ch{height:320px}
+  .ch{position:relative;height:235px}
+  .panel.wide .ch{height:260px}
   .kpis{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
   .kpi{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 14px;min-width:140px}
   .kpi b{display:block;font-size:19px}
@@ -89,8 +89,32 @@
     <div class="ch"><canvas id="c5"></canvas></div>
   </div>
 
+  <div class="panel">
+    <h2>6 · Revenue rolling off, quarter by quarter</h2>
+    <p class="why"><b>Why:</b> chart 1 in dollars. Each bar = gross $/day that stops flowing as charters reach earliest redelivery in that quarter (stacked by segment). Q4 2026 and Q1 2027 are the heavy quarters — over $200k/day of income to be re-fixed in each. That is where Diana has the strongest incentive to discuss forward cover early, and where a broker with firm cargoes gets the best hearing.</p>
+    <div class="ch"><canvas id="c7"></canvas></div>
+  </div>
+
+  <div class="panel">
+    <h2>7 · Days until earliest redelivery — next 15 ships</h2>
+    <p class="why"><b>Why:</b> the working queue, today. Bars = days from 10 June 2026 until each ship can be redelivered (negative = the window is already open — ISMENE, MEDUSA, PEGASUS are effectively spot candidates now). This is the order in which to work the fleet: anything under ~90 days is current business, the rest is forward.</p>
+    <div class="ch"><canvas id="c8"></canvas></div>
+  </div>
+
+  <div class="panel">
+    <h2>8 · Fleet composition by deadweight</h2>
+    <p class="why"><b>Why:</b> where the owner's real exposure sits. By DWT, Capes/Newcastlemaxes are ~55% of the fleet even though they are only 12 of 40 ships — Diana's earnings swing with the cape market far more than the vessel count suggests. Useful context when judging how aggressive they will be on the smaller sizes.</p>
+    <div class="ch"><canvas id="c9"></canvas></div>
+  </div>
+
+  <div class="panel">
+    <h2>9 · Scheduled off-hire days per half-year</h2>
+    <p class="why"><b>Why:</b> total drydock days on the books per semester. H2 2026 carries ~100 days of off-hire (4 dockings) and H1 2027 nearly as much — in those windows Diana's effective earning fleet shrinks, which supports rates on their open ships and limits what they can offer. Also a sanity check before proposing period spanning a docking.</p>
+    <div class="ch"><canvas id="c10"></canvas></div>
+  </div>
+
   <div class="panel wide">
-    <h2>6 · Drydock calendar (off-hire planning)</h2>
+    <h2>10 · Drydock calendar (off-hire planning)</h2>
     <p class="why"><b>Why:</b> every blue block is a ship out of the market ~3–4 weeks. Two uses: (a) when several dockings stack in one quarter (Q4 2026 has four), Diana's effective open fleet is smaller than the redelivery profile suggests — fewer ships to offer; (b) a ship docking right after redelivery (SAN FRANCISCO, MYRTO, MAIA, FLORIDA…) will want a short ballast-friendly last leg, which is a concrete angle when proposing the final voyage or the next employment with delivery ex-yard.</p>
     <div class="ch"><canvas id="c6"></canvas></div>
   </div>
@@ -249,7 +273,62 @@ new Chart(c5,{type:"bar",data:{labels:ships.map(s=>s.n),datasets:[{label:"age (y
    ctx.fillStyle="#c92a2a";ctx.font="10px sans-serif";ctx.fillText("15y",x+3,ch.chartArea.top+10);ctx.restore();}}]});
 }
 
-// ---- 6 · drydock calendar ----
+// ---- 6 · revenue roll-off per quarter ----
+{
+const qs=["2026-Q3","2026-Q4","2027-Q1","2027-Q2","2027-Q3","2027-Q4","2028-Q1"];
+const qOf=d=>{const y=d.slice(0,4),m=+d.slice(5,7);return `${y}-Q${Math.ceil(m/3)}`;};
+const ds=Object.keys(TYPES).map(t=>({label:TYPES[t],backgroundColor:COL[t],stack:"a",
+ data:qs.map(q=>fixed.filter(v=>v.t===t&&v.rf&&qOf(v.rf)===q).reduce((s,v)=>s+v.rateN,0))}));
+new Chart(c7,{type:"bar",data:{labels:qs,datasets:ds},
+ options:{maintainAspectRatio:false,
+ scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,ticks:{callback:v=>"$"+v/1000+"k"},title:{display:true,text:"gross $/day reaching redelivery"}}},
+ plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+": $ "+fmt(c.parsed.y),
+  footer:i=>{const q=qs[i[0].dataIndex];return fixed.filter(v=>v.rf&&qOf(v.rf)===q).map(v=>v.n).join(", ");}}}}}});
+}
+
+// ---- 7 · days to earliest redelivery ----
+{
+const DAY=864e5;
+const q=fixed.filter(v=>v.rf).map(v=>({n:v.n,t:v.t,days:Math.round((Date.parse(v.rf)-TODAY.getTime())/DAY)}))
+ .sort((a,b)=>a.days-b.days).slice(0,15);
+new Chart(c8,{type:"bar",data:{labels:q.map(s=>s.n),datasets:[{label:"days",
+ data:q.map(s=>s.days),backgroundColor:q.map(s=>s.days<0?"#c92a2a":COL[s.t])}]},
+ options:{maintainAspectRatio:false,indexAxis:"y",
+ scales:{y:{ticks:{font:{size:9},autoSkip:false}},x:{title:{display:true,text:"days from 10 Jun 2026 (red = window already open)"}}},
+ plugins:{legend:{display:false},
+  tooltip:{callbacks:{label:c=>`${q[c.dataIndex].n}: ${c.parsed.x} days (${TYPES[q[c.dataIndex].t]})`}}}}});
+}
+
+// ---- 8 · fleet composition by dwt ----
+{
+const agg=Object.keys(TYPES).map(t=>{
+ const ships=V.filter(v=>v.t===t);
+ return{t,dwt:ships.reduce((s,v)=>s+v.d,0),n:ships.length};});
+new Chart(c9,{type:"doughnut",data:{labels:agg.map(a=>TYPES[a.t]),
+ datasets:[{data:agg.map(a=>a.dwt),backgroundColor:agg.map(a=>COL[a.t]),borderWidth:1}]},
+ options:{maintainAspectRatio:false,
+ plugins:{tooltip:{callbacks:{label:c=>{const a=agg[c.dataIndex];const tot=agg.reduce((s,x)=>s+x.dwt,0);
+  return `${TYPES[a.t]}: ${fmt(a.dwt)} dwt (${Math.round(a.dwt/tot*100)}%) · ${a.n} ships`;}}}}}});
+}
+
+// ---- 9 · off-hire days per half-year ----
+{
+const halves=[["2026-07","2026-12","H2 26"],["2027-01","2027-06","H1 27"],["2027-07","2027-12","H2 27"],
+ ["2028-01","2028-06","H1 28"],["2028-07","2028-12","H2 28"],["2029-01","2029-06","H1 29"],["2029-07","2029-12","H2 29"]];
+const DAY=864e5;
+const all=V.flatMap(v=>(v.dd||[]).map(d=>({a:Date.parse(d[0]),b:Date.parse(d[1]),n:v.n})));
+const data=halves.map(([f,t])=>{
+ const h0=Date.parse(f+"-01"), h1=Date.parse(t+"-28")+3*DAY;
+ return Math.round(all.reduce((s,d)=>s+Math.max(0,(Math.min(d.b,h1)-Math.max(d.a,h0))/DAY),0));});
+new Chart(c10,{type:"bar",data:{labels:halves.map(h=>h[2]),datasets:[{label:"off-hire days",data,backgroundColor:"#3d85c8"}]},
+ options:{maintainAspectRatio:false,
+ scales:{x:{grid:{display:false}},y:{title:{display:true,text:"drydock days scheduled"}}},
+ plugins:{legend:{display:false},
+  tooltip:{callbacks:{footer:i=>{const [f,t]=halves[i[0].dataIndex];const h0=Date.parse(f+"-01"),h1=Date.parse(t+"-28")+3*DAY;
+   return all.filter(d=>d.b>h0&&d.a<h1).map(d=>d.n).join(", ");}}}}}});
+}
+
+// ---- 10 · drydock calendar ----
 {
 const all=V.flatMap(v=>(v.dd||[]).map(d=>({v:v.n,a:d[0],b:d[1]})));
 const keys=monthKeys("2026-01","2029-12"), labels=monthLabels("2026-01","2029-12");
