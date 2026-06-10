@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diana / Ocean Pal — Fleet Employment 2026–2029</title>
+<style>
+  :root{
+    --bg:#f4f6f9; --card:#ffffff; --ink:#1a2433; --muted:#6b7686; --line:#e2e7ee;
+    /* same hue families as the PDF legend, softened */
+    --ultra:#8fbf6f; --pmax:#f5d442; --postpmax:#f5a86e; --cape:#7cc4dd;
+    --opt:#aab4c2; --offhire:#9db8dc; --redely:#b39ddb; --expdely:#4caf7d; --dd:#3d85c8;
+    --dwm:#c92a2a; --accent:#1f4e79;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font:14px/1.45 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink);padding:18px}
+  header{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:14px}
+  h1{font-size:21px;color:var(--accent)}
+  header .sub{color:var(--muted);font-size:13px}
+  header a.chartlink{margin-left:auto;background:var(--accent);color:#fff;text-decoration:none;padding:8px 16px;border-radius:6px;font-size:13px;font-weight:600}
+  .stats{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 14px;min-width:110px}
+  .stat b{display:block;font-size:20px}
+  .stat span{font-size:12px;color:var(--muted)}
+  .stat .dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;border:1px solid #c9d2dd}
+  .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+  .controls input,.controls select{padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card);font-size:13px}
+  .controls input[type=text]{width:230px}
+  .controls label{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:5px;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+  .tabs{display:flex;gap:6px;margin-left:auto}
+  .tabs button{padding:7px 16px;border:1px solid var(--line);background:var(--card);border-radius:6px;cursor:pointer;font-size:13px}
+  .tabs button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;overflow-x:auto}
+  /* ---------- table ---------- */
+  table{border-collapse:collapse;width:100%;min-width:1180px}
+  th,td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+  th{background:#eef2f7;cursor:pointer;user-select:none;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:#3b4a5e;position:sticky;top:0}
+  th .arr{font-size:10px;color:var(--accent)}
+  tr:hover td{background:#f6f9fc}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .vname{font-weight:600}
+  .vname.dwm{color:var(--dwm)}
+  .pill{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:600;color:#243042}
+  .pill.ultra{background:var(--ultra)} .pill.pmax{background:var(--pmax)}
+  .pill.postpmax{background:var(--postpmax)} .pill.cape{background:var(--cape)}
+  .note{color:var(--dwm);font-size:12px;white-space:normal;max-width:240px}
+  .rate{font-weight:600}
+  td .small{font-size:11px;color:var(--muted);white-space:normal;max-width:230px;display:block}
+  .ddcell{color:#0a5ba6;font-weight:600}
+  /* ---------- timeline ---------- */
+  .tl{min-width:1180px}
+  .tl-head{display:grid;grid-template-columns:175px 1fr;font-size:11px;color:var(--muted)}
+  .tl-years{display:grid;grid-template-columns:repeat(4,1fr);border-left:1px solid var(--line)}
+  .tl-years div{border-right:1px solid var(--line);text-align:center;padding:3px 0;background:#dde6f0;font-weight:700;color:var(--accent);font-size:12px}
+  .tl-months{display:grid;grid-template-columns:repeat(48,1fr);border-left:1px solid var(--line)}
+  .tl-months div{border-right:1px solid var(--line);text-align:center;padding:2px 0;overflow:hidden;background:#eef2f7;font-weight:600;color:#3b4a5e}
+  .tl-months div.jan{border-left:2px solid #9fb0c4}
+  .tl-row{display:grid;grid-template-columns:175px 1fr;align-items:center;border-bottom:1px solid var(--line)}
+  .tl-row:hover{background:#f6f9fc}
+  .tl-label{font-size:12px;font-weight:600;padding:5px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tl-label.dwm{color:var(--dwm)}
+  .tl-label small{display:block;font-weight:400;color:var(--muted)}
+  .tl-track{position:relative;height:30px;border-left:1px solid var(--line);background:
+    repeating-linear-gradient(90deg,transparent 0,transparent calc(100%/48 - 1px),var(--line) calc(100%/48 - 1px),var(--line) calc(100%/48))}
+  .bar{position:absolute;top:6px;height:18px;border-radius:9px;font-size:10px;line-height:18px;color:#243042;overflow:hidden;white-space:nowrap;padding:0 7px;box-shadow:0 1px 2px rgba(26,36,51,.18)}
+  .bar.opt{background:repeating-linear-gradient(45deg,#b3bdca 0 5px,#d9e0e9 5px 10px);color:#3b4a5e}
+  .bar.offh{background:var(--offhire)}
+  .bar.dd{background:var(--dd);color:#fff;z-index:2}
+  .bar.dely{background:var(--expdely);color:#fff}
+  .bar.etr{background:var(--redely);width:6px!important;padding:0;z-index:3;border-radius:3px}
+  .today{position:absolute;top:0;bottom:0;width:2px;background:var(--dwm);z-index:4}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:12px;font-size:12px;color:var(--muted)}
+  .legend i{display:inline-block;width:14px;height:11px;border-radius:2px;margin-right:4px;vertical-align:middle;border:1px solid rgba(0,0,0,.15)}
+  .fleet-sep{background:#eef2f7;font-weight:700;font-size:12px;color:var(--accent);padding:5px 8px;grid-column:1/-1}
+  tr.sep td{background:#eef2f7;font-weight:700;color:var(--accent)}
+  footer{margin-top:12px;font-size:11px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>DIANA &amp; OCEAN PAL — FLEET EMPLOYMENT</h1>
+  <span class="sub">January 2026 → December 2029 · report dated 10 June 2026 · P. G. Zafirakis</span>
+  <a class="chartlink" href="fleet-analytics-2026.html">📊 Analytics →</a>
+</header>
+
+<div class="stats" id="stats"></div>
+
+<div class="controls">
+  <input type="text" id="q" placeholder="Search vessel / charterer / yard…">
+  <select id="fFleet">
+    <option value="">All fleets</option>
+    <option value="Diana">Diana</option>
+    <option value="Ocean Pal">Ocean Pal</option>
+  </select>
+  <select id="fType">
+    <option value="">All segments</option>
+    <option value="ultra">Ultramax</option>
+    <option value="pmax">Pmax / Kmx</option>
+    <option value="postpmax">Post-Pmx</option>
+    <option value="cape">Cape / Newcastlemax</option>
+  </select>
+  <label><input type="checkbox" id="fDwm"> DWM-managed only</label>
+  <label><input type="checkbox" id="fDd"> with upcoming drydock</label>
+  <div class="tabs">
+    <button id="tabTl" class="on">Timeline</button>
+    <button id="tabTb">Table</button>
+  </div>
+</div>
+
+<div class="card" id="viewTl"></div>
+<div class="card" id="viewTb" style="display:none"></div>
+
+<div class="legend">
+  <span><i style="background:var(--ultra)"></i>Ultra (min period)</span>
+  <span><i style="background:var(--pmax)"></i>Pmx/Kmx (min period)</span>
+  <span><i style="background:var(--postpmax)"></i>Post-Pmx (min period)</span>
+  <span><i style="background:var(--cape)"></i>Cape/Nmax (min period)</span>
+  <span><i style="background:repeating-linear-gradient(45deg,#b3bdca 0 5px,#d9e0e9 5px 10px)"></i>Optional period</span>
+  <span><i style="background:var(--offhire)"></i>Added off-hire</span>
+  <span><i style="background:var(--redely)"></i>Probable redelivery (ETR)</span>
+  <span><i style="background:var(--expdely)"></i>Expected delivery (NB)</span>
+  <span><i style="background:var(--dd)"></i>Drydock / repairs</span>
+  <span><i style="background:var(--dwm)"></i>Today (10 Jun 2026)</span>
+  <span style="color:var(--dwm);font-weight:600">Names in red = managed by DWM</span>
+</div>
+
+<footer>Source: FLEET EMPLOYMENT 2026.pdf — gross rates per day. Min/optional periods from the printed dates; drydock, off-hire and ETR blocks digitised from the chart (±a few days). AMPHITRITE window printed "31/4/2027" in the original.</footer>
+
+<script>
+// rf/rt = redelivery window (earliest = end of minimum period / latest = end of optional period)
+// dd = drydock/repairs [from,to]  | off = added off-hire | etr = probable redelivery tick | dely = expected delivery (newbuilding)
+const V = [
+ // DIANA
+ {n:"NEW YORK",f:"Diana",c:"REFINED SUCCESS",r:"$ 27,500",rateN:27500,w:"1/2/2028 – 31/3/2028",rf:"2028-02-01",rt:"2028-03-31",dd:[["2028-04-04","2028-05-02"]],y:"Waigaoqiao",d:177773,b:"Mar-10",cl:"BV",fl:"MI",t:"cape"},
+ {n:"HULL No. 391",f:"Diana",c:"— newbuilding —",r:"",rateN:null,w:"Expected delivery Jan-28",rf:null,rt:null,dely:["2028-01-04","2028-02-01"],y:"Tsuneishi-Zhoushan",d:81200,b:"Jan-28",cl:"NKK",fl:"MI",t:"pmax"},
+ {n:"MYRTO",f:"Diana",c:"NYK",r:"$ 16,650",rateN:16650,w:"20/9/2027 – 20/11/2027",rf:"2027-09-20",rt:"2027-11-20",dd:[["2027-11-22","2027-12-23"]],y:"Tsuneishi",d:82131,b:"Jan-13",cl:"NK",fl:"MI",t:"pmax"},
+ {n:"MAIA",f:"Diana",c:"PARALOS",r:"$ 14,000",rateN:14000,w:"5/7/2027 – 5/9/2027",rf:"2027-07-05",rt:"2027-09-05",dd:[["2027-09-07","2027-09-27"]],y:"Tsuneishi",d:82193,b:"Aug-09",cl:"NK",fl:"MI",t:"pmax"},
+ {n:"HULL No. 390",f:"Diana",c:"— newbuilding —",r:"",rateN:null,w:"Expected delivery Aug-27",rf:null,rt:null,dely:["2027-08-04","2027-09-02"],y:"Tsuneishi-Zhoushan",d:81200,b:"Aug-27",cl:"NKK",fl:"MI",t:"pmax"},
+ {n:"DSI PYXIS",f:"Diana",c:"OLDENDORFF",r:"$ 16,000",rateN:16000,w:"15/6/2027 – 15/8/2027",rf:"2027-06-15",rt:"2027-08-15",dd:[["2028-10-27","2028-11-26"]],y:"Mitsui E & S (Tamano)",d:60362,b:"Nov-18",cl:"NKK",fl:"MI",t:"ultra"},
+ {n:"SEATTLE",f:"Diana",c:"SWISSMARINE",r:"$ 24,500",rateN:24500,w:"1/5/2027 – 30/6/2027",rf:"2027-05-01",rt:"2027-06-30",y:"Hyundai HI",d:179362,b:"Apr-11",cl:"NK",fl:"MI",t:"cape"},
+ {n:"DSI ANDROMEDA",f:"Diana",c:"WBC",r:"$ 14,600",rateN:14600,w:"1/4/2027 – 31/5/2027",rf:"2027-04-01",rt:"2027-05-31",y:"JMU Universal",d:60309,b:"Feb-16",cl:"NKK",fl:"MI",t:"ultra",dwm:1},
+ {n:"CRYSTALIA",f:"Diana",c:"SWISSMARINE",r:"$ 16,200",rateN:16200,w:"10/3/2027 – 10/5/2027",rf:"2027-03-10",rt:"2027-05-10",y:"Jiangnan",d:77525,b:"Feb-14",cl:"LR",fl:"GR",t:"pmax"},
+ {n:"POLYMNIA",f:"Diana",c:"OLDENDORFF",r:"$ 20,000",rateN:20000,w:"1/3/27 – 30/4/27",rf:"2027-03-01",rt:"2027-04-30",dd:[["2027-05-05","2027-06-02"]],y:"Tsuneishi-Zhoushan",d:98704,b:"Nov-12",cl:"NKK",fl:"MI",t:"postpmax"},
+ {n:"AMPHITRITE",f:"Diana",c:"COBELFRET",r:"first 30 days $ 13,000, balance $ 16,500",rateN:16500,w:"1/3/2027 – 31/4/2027",rf:"2027-03-01",rt:"2027-04-30",dd:[["2027-05-05","2027-06-02"]],y:"Tsuneishi-Zhoushan",d:98697,b:"Aug-12",cl:"NKK",fl:"MI",t:"postpmax"},
+ {n:"SANTA BARBARA",f:"Diana",c:"NORDEN",r:"$ 25,500",rateN:25500,w:"1/3/2027 – 30/4/2027",rf:"2027-03-01",rt:"2027-04-30",y:"Beihai",d:179426,b:"Jan-15",cl:"CCS",fl:"MI",t:"cape"},
+ {n:"DSI AQUILA",f:"Diana",c:"BUNGE",r:"$ 14,500",rateN:14500,w:"25/2/2027 – 25/4/2027",rf:"2027-02-25",rt:"2027-04-25",y:"JMU Universal",d:60309,b:"Oct-15",cl:"NKK",fl:"MI",t:"ultra",dwm:1},
+ {n:"PHAIDRA",f:"Diana",c:"NYK",r:"$ 14,500",rateN:14500,w:"20/2/2027 – 20/4/2027",rf:"2027-02-20",rt:"2027-04-20",y:"Hudong",d:87146,b:"Mar-13",cl:"ABS",fl:"MI",t:"postpmax"},
+ {n:"FLORIDA",f:"Diana",c:"BUNGE",r:"$ 25,900",rateN:25900,w:"29/1/2027 – 29/5/2027",rf:"2027-01-29",rt:"2027-05-29",dd:[["2027-06-04","2027-07-03"]],y:"Namura",d:182063,b:"Mar-22",cl:"NK",fl:"MI",t:"cape"},
+ {n:"SEMIRIO",f:"Diana",c:"SOLEBAY",r:"$ 21,650",rateN:21650,w:"31/1/2027 – 15/4/2027",rf:"2027-01-31",rt:"2027-04-15",y:"Waigaoqiao",d:174261,b:"Jun-07",cl:"BV",fl:"MI",t:"cape",dwm:1},
+ {n:"DSI ALTAIR",f:"Diana",c:"BUNGE",r:"$ 14,750",rateN:14750,w:"15/1/27 – 30/3/27",rf:"2027-01-15",rt:"2027-03-30",dd:[["2026-01-04","2026-01-21"]],y:"JMU Universal",d:60309,b:"Jan-16",cl:"NKK",fl:"MI",t:"ultra",dwm:1},
+ {n:"DSI POLLUX",f:"Diana",c:"STONE",r:"$ 14,750",rateN:14750,w:"1/1/2027 – 28/2/2027",rf:"2027-01-01",rt:"2027-02-28",y:"Mitsui E & S (Chiba)",d:60446,b:"Oct-15",cl:"NKK",fl:"MI",t:"ultra"},
+ {n:"MYRSINI",f:"Diana",c:"PARALOS",r:"$ 13,500",rateN:13500,w:"20/12/2026 – 20/2/2027",rf:"2026-12-20",rt:"2027-02-20",y:"Tsuneishi",d:82117,b:"Mar-10",cl:"BV",fl:"MI",t:"pmax"},
+ {n:"NEW ORLEANS",f:"Diana",c:"SWISSMARINE",r:"$ 26,000",rateN:26000,w:"1/12/2026 – 15/2/2027",rf:"2026-12-01",rt:"2027-02-15",y:"Waigaoqiao",d:180960,b:"Nov-15",cl:"ABS",fl:"MI",t:"cape"},
+ {n:"ELECTRA",f:"Diana",c:"OLDENDORFF",r:"$ 14,000",rateN:14000,w:"1/12/2026 – 31/1/2027",rf:"2026-12-01",rt:"2027-01-31",y:"Hudong",d:87150,b:"Jun-13",cl:"CCS",fl:"MI",t:"postpmax"},
+ {n:"P.S. PALIOS",f:"Diana",c:"GLENCORE FREIGHT",r:"$ 25,200",rateN:25200,w:"15/11/2026 – 15/1/2027",rf:"2026-11-15",rt:"2027-01-15",y:"Hyundai HI",d:179134,b:"Jan-13",cl:"BV",fl:"MI",t:"cape"},
+ {n:"DSI AQUARIUS",f:"Diana",c:"BUNGE",r:"$ 14,500",rateN:14500,w:"1/11/2026 – 31/12/2026",rf:"2026-11-01",rt:"2026-12-31",dd:[["2026-04-13","2026-05-03"]],y:"JMU Universal",d:60309,b:"Apr-16",cl:"NKK",fl:"MI",t:"ultra",dwm:1},
+ {n:"SAN FRANCISCO",f:"Diana",c:"SWISSMARINE",r:"$ 26,000",rateN:26000,w:"25/10/2026 – 25/12/2026",rf:"2026-10-25",rt:"2026-12-25",dd:[["2026-12-28","2027-01-16"]],y:"Jiangnan",d:208006,b:"Jan-17",cl:"BV",fl:"MI",t:"cape"},
+ {n:"MAERA",f:"Diana",c:"CRC",r:"$ 11,750",rateN:11750,w:"20/10/2026 – 20/12/2026",rf:"2026-10-20",rt:"2026-12-20",dd:[["2028-01-04","2028-01-27"]],y:"Jiangnan",d:75403,b:"Jan-13",cl:"BV",fl:"MI",t:"pmax"},
+ {n:"DSI PHOENIX",f:"Diana",c:"CARGILL",r:"$ 13,500",rateN:13500,w:"1/10/2026 – 30/11/2026",rf:"2026-10-01",rt:"2026-11-30",dd:[["2026-12-04","2026-12-27"]],y:"Mitsui E & S (Chiba)",d:60456,b:"Jan-17",cl:"NKK",fl:"MI",t:"ultra"},
+ {n:"LEONIDAS P. C.",f:"Diana",c:"NYK",r:"$ 14,000",rateN:14000,w:"15/9/2026 – 15/11/2026",rf:"2026-09-15",rt:"2026-11-15",dd:[["2028-09-22","2028-10-17"]],y:"Tsuneishi",d:82165,b:"Oct-11",cl:"NK",fl:"MI",t:"pmax"},
+ {n:"LOS ANGELES",f:"Diana",c:"MOL OCEAN BULK",r:"$ 24,000",rateN:24000,w:"10/9/2026 – 1/11/2026",rf:"2026-09-10",rt:"2026-11-01",dd:[["2026-11-03","2026-11-26"]],y:"Jiangnan",d:206104,b:"Feb-12",cl:"BV",fl:"MI",t:"cape"},
+ {n:"NEWPORT NEWS",f:"Diana",c:"BOHAI OCEAN SHIPPING",r:"$ 25,000",rateN:25000,w:"1/9/2026 – 31/10/2026",rf:"2026-09-01",rt:"2026-10-31",dd:[["2026-11-03","2026-11-26"]],y:"Jiangnan",d:208021,b:"Jan-17",cl:"BV",fl:"MI",t:"cape"},
+ {n:"ASTARTE",f:"Diana",c:"PROPEL",r:"$ 12,500",rateN:12500,w:"16/8/2026 – 16/10/2026",rf:"2026-08-16",rt:"2026-10-16",dd:[["2027-12-04","2027-12-27"]],y:"Daewoo",d:81513,b:"Feb-13",cl:"ABS",fl:"MI",t:"pmax"},
+ {n:"G. P. ZAFIRAKIS",f:"Diana",c:"NYK",r:"$ 26,800",rateN:26800,w:"9/8/2026 – 9/11/2026",rf:"2026-08-09",rt:"2026-11-09",dd:[["2029-08-18","2029-09-11"]],y:"Beihai",d:179492,b:"Aug-14",cl:"CCS",fl:"MI",t:"cape"},
+ {n:"DSI POLARIS",f:"Diana",c:"CARGILL",r:"$ 12,250",rateN:12250,w:"21/7/2026 – 21/9/2026",rf:"2026-07-21",rt:"2026-09-21",dd:[["2028-08-07","2028-09-01"]],y:"Mitsui E & S (Tamano)",d:60404,b:"Aug-18",cl:"NKK",fl:"MI",t:"ultra"},
+ {n:"LETO",f:"Diana",c:"CARGILL",r:"$ 12,750",rateN:12750,w:"16/7/2026 – 16/9/2026",rf:"2026-07-16",rt:"2026-09-16",dd:[["2028-02-03","2028-03-02"]],y:"Universal",d:81297,b:"Feb-10",cl:"ABS",fl:"MI",t:"pmax"},
+ {n:"ATALANDI",f:"Diana",c:"STONE (CTM)",r:"first 35 days $ 9,000, balance $ 10,100",rateN:10100,w:"15/6/2026 – 15/8/2026",rf:"2026-06-15",rt:"2026-08-15",dd:[["2029-05-13","2029-06-07"]],y:"Jiangnan",d:77529,b:"May-14",cl:"LR",fl:"GR",t:"pmax"},
+ {n:"PHILADELPHIA",f:"Diana",c:"REFINED SUCCESS",r:"$ 21,500",rateN:21500,w:"9/6/2026 – 8/8/2026",rf:"2026-06-09",rt:"2026-08-08",dd:[["2027-05-19","2027-06-12"]],y:"Jiangnan",d:206040,b:"May-12",cl:"BV",fl:"MI",t:"cape"},
+ {n:"DSI PEGASUS",f:"Diana",c:"CARGILL",r:"$ 14,250",rateN:14250,w:"20/5/2026 – 20/7/2026",rf:"2026-05-20",rt:"2026-07-20",off:[["2026-07-23","2026-08-02"]],etr:"2026-07-29",note:"Will exceed maximum period — ETR 29 July 2026",y:"Mitsui E & S (Chiba)",d:60508,b:"Aug-15",cl:"NKK",fl:"MI",t:"ultra"},
+ {n:"MEDUSA",f:"Diana",c:"CARGILL",r:"$ 13,000",rateN:13000,w:"15/5/2026 – 15/7/2026",rf:"2026-05-15",rt:"2026-07-15",etr:"2026-07-05",dd:[["2028-03-18","2028-04-12"]],y:"Tsuneishi",d:82194,b:"Apr-10",cl:"NK",fl:"MI",t:"pmax"},
+ {n:"ISMENE",f:"Diana",c:"CRC",r:"$ 11,000",rateN:11000,w:"20/3/2026 – 20/5/2026",rf:"2026-03-20",rt:"2026-05-20",off:[["2026-05-23","2026-06-22"]],etr:"2026-06-25",note:"Has exceeded maximum period — ETR 25 June 2026",dd:[["2028-10-03","2028-11-01"]],y:"Jiangnan",d:77910,b:"Oct-13",cl:"BV",fl:"MI",t:"pmax"},
+ // OCEAN PAL
+ {n:"MELIA",f:"Ocean Pal",c:"CRC",r:"$ 16,900",rateN:16900,w:"15/9/2026 – 30/11/2026",rf:"2026-09-15",rt:"2026-11-30",y:"Tsuneishi",d:76225,b:"Feb-05",cl:"NKK",fl:"MI",t:"pmax",dwm:1},
+ {n:"CALIPSO",f:"Ocean Pal",c:"ORIENTAL PAL",r:"$ 19,500",rateN:19500,w:"25/7/2026 – 24/8/2026",rf:"2026-07-25",rt:"2026-08-24",y:"Jiangnan",d:73691,b:"Feb-05",cl:"DNV-GL",fl:"BAH",t:"pmax",dwm:1},
+];
+
+const TYPES={ultra:"Ultramax",pmax:"Pmax/Kmx",postpmax:"Post-Pmx",cape:"Cape/Nmax"};
+const COLORS={ultra:"var(--ultra)",pmax:"var(--pmax)",postpmax:"var(--postpmax)",cape:"var(--cape)"};
+const T0=Date.parse("2026-01-01"), T1=Date.parse("2030-01-01"), SPAN=T1-T0;
+const TODAY=Date.parse("2026-06-10");
+const pct=d=>((Date.parse(d)-T0)/SPAN*100);
+const fmt=n=>n.toLocaleString("en-US");
+const MN=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const ddLabel=v=>{
+  if(!v.dd)return null;
+  return v.dd.map(([a,b])=>{
+    const d1=new Date(a),d2=new Date(b);
+    const s=(d1.getMonth()===d2.getMonth()&&d1.getFullYear()===d2.getFullYear())
+      ? `${MN[d1.getMonth()]} ${d1.getFullYear()}`
+      : `${MN[d1.getMonth()]}–${MN[d2.getMonth()]} ${d2.getFullYear()}`;
+    return Date.parse(b)<TODAY ? s+" (done)" : s;
+  }).join(", ");
+};
+
+let sortKey="rf", sortDir=1, view="tl";
+
+function filtered(){
+  const q=document.getElementById("q").value.trim().toLowerCase();
+  const ff=document.getElementById("fFleet").value;
+  const ft=document.getElementById("fType").value;
+  const fd=document.getElementById("fDwm").checked;
+  const fdd=document.getElementById("fDd").checked;
+  return V.filter(v=>
+    (!q||(v.n+" "+v.c+" "+v.y).toLowerCase().includes(q)) &&
+    (!ff||v.f===ff) && (!ft||v.t===ft) && (!fd||v.dwm) &&
+    (!fdd||(v.dd&&v.dd.some(([a,b])=>Date.parse(b)>=TODAY))));
+}
+function sorted(a){
+  return [...a].sort((x,y)=>{
+    let vx=x[sortKey],vy=y[sortKey];
+    if(sortKey==="rf"){vx=vx?Date.parse(vx):Infinity;vy=vy?Date.parse(vy):Infinity;}
+    if(vx==null)return 1; if(vy==null)return -1;
+    if(typeof vx==="string")return sortDir*vx.localeCompare(vy);
+    return sortDir*(vx-vy);
+  });
+}
+
+function renderStats(){
+  const a=filtered();
+  const c=t=>a.filter(v=>v.t===t).length;
+  const rates=a.filter(v=>v.rateN).map(v=>v.rateN);
+  const avg=rates.length?Math.round(rates.reduce((s,x)=>s+x,0)/rates.length):0;
+  const ddn=a.filter(v=>v.dd&&v.dd.some(([x,b])=>Date.parse(b)>=TODAY)).length;
+  document.getElementById("stats").innerHTML=`
+    <div class="stat"><b>${a.length}</b><span>vessels shown</span></div>
+    <div class="stat"><b>${c("ultra")}</b><span><i class="dot" style="background:var(--ultra)"></i>Ultramax</span></div>
+    <div class="stat"><b>${c("pmax")}</b><span><i class="dot" style="background:var(--pmax)"></i>Pmax/Kmx</span></div>
+    <div class="stat"><b>${c("postpmax")}</b><span><i class="dot" style="background:var(--postpmax)"></i>Post-Pmx</span></div>
+    <div class="stat"><b>${c("cape")}</b><span><i class="dot" style="background:var(--cape)"></i>Cape/Nmax</span></div>
+    <div class="stat"><b>$ ${fmt(avg)}</b><span>avg gross rate/day</span></div>
+    <div class="stat"><b>${ddn}</b><span><i class="dot" style="background:var(--dd)"></i>upcoming drydocks</span></div>`;
+}
+
+function monthHeader(){
+  let yh="";
+  for(let y=2026;y<=2029;y++) yh+=`<div>${y}</div>`;
+  let mh="";
+  const L=["J","F","M","A","M","J","J","A","S","O","N","D"];
+  for(let y=2026;y<=2029;y++)for(let m=0;m<12;m++)
+    mh+=`<div class="${m===0?'jan':''}" title="${MN[m]} ${y}">${L[m]}</div>`;
+  return `<div class="tl-head"><div></div><div class="tl-years">${yh}</div></div>
+          <div class="tl-head"><div></div><div class="tl-months">${mh}</div></div>`;
+}
+
+function renderTimeline(){
+  const a=sorted(filtered());
+  let rows=monthHeader();
+  let lastFleet="";
