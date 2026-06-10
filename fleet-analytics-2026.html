@@ -9,7 +9,7 @@
   :root{--bg:#f4f6f9;--card:#fff;--ink:#1a2433;--muted:#6b7686;--line:#e2e7ee;--accent:#1f4e79;
     --ultra:#769c3c;--pmax:#e3c800;--postpmax:#fabf8f;--cape:#7ec3d8;--dd:#0070c0;--dwm:#c92a2a}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink);padding:18px;max-width:1240px;margin:0 auto}
+  body{font:14px/1.5 "Segoe UI",system-ui,sans-serif;background:var(--bg);color:var(--ink);padding:18px}
   header{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:14px}
   h1{font-size:21px;color:var(--accent)}
   header .sub{color:var(--muted);font-size:13px}
@@ -34,6 +34,8 @@
   html[data-theme=dark]{--bg:#0e1520;--card:#161f2c;--ink:#e4eaf3;--muted:#94a4b9;--line:#273245;--accent:#7fb6e8}
   html[data-theme=dark] .why b{color:#c6d2e2}
   html[data-theme=dark] .theme-btn{background:#2e3a52;color:#ffd76e}
+  html[data-theme=dark] .tabs a,html[data-theme=dark] .tabs button{background:#243349;border-color:#3c4d68;color:#e4eaf3}
+  html[data-theme=dark] .tabs .on{background:#7fb6e8;border-color:#7fb6e8;color:#0e1520;font-weight:600}
   @media(max-width:900px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -45,6 +47,8 @@
   <button id="themeBtn" class="theme-btn" title="Day / night mode">☀</button>
 </header>
 
+<div class="kpis" id="kpis"></div>
+
 <div class="controls">
   <div class="tabs">
     <a href="index.html">Timeline</a>
@@ -52,8 +56,6 @@
     <button class="on">Analytics</button>
   </div>
 </div>
-
-<div class="kpis" id="kpis"></div>
 
 <div class="grid">
 
