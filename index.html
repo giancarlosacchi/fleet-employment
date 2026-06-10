@@ -74,6 +74,19 @@
   .fleet-sep{background:#eef2f7;font-weight:700;font-size:12px;color:var(--accent);padding:5px 8px;grid-column:1/-1}
   tr.sep td{background:#eef2f7;font-weight:700;color:var(--accent)}
   footer{margin-top:12px;font-size:11px;color:var(--muted)}
+  .tl-corner{display:flex;align-items:flex-end;justify-content:flex-end;padding:2px 10px;font-size:11px;font-weight:700;letter-spacing:.06em;color:#3b4a5e}
+  .tabs a{padding:7px 16px;border:1px solid var(--line);background:var(--card);border-radius:6px;font-size:13px;text-decoration:none;color:var(--ink)}
+  .theme-btn{margin-left:auto;width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;background:#f6a821;color:#fff;font-size:15px;line-height:34px;box-shadow:0 1px 3px rgba(0,0,0,.25);flex:0 0 auto}
+  /* ---------- dark mode ---------- */
+  html[data-theme=dark] body, html[data-theme=dark]{--bg:#0e1520;--card:#161f2c;--ink:#e4eaf3;--muted:#94a4b9;--line:#273245;--accent:#7fb6e8}
+  html[data-theme=dark] th, html[data-theme=dark] .tl-months div, html[data-theme=dark] .fleet-sep, html[data-theme=dark] tr.sep td{background:#1d2939;color:#aebdd1}
+  html[data-theme=dark] .tl-years div{background:#223048}
+  html[data-theme=dark] tr:hover td, html[data-theme=dark] .tl-row:hover{background:#1b2636}
+  html[data-theme=dark] .bar.opt{background:repeating-linear-gradient(45deg,#42526b 0 5px,#2e3a4f 5px 10px);color:#c6d2e2}
+  html[data-theme=dark] .tl-corner{color:#aebdd1}
+  html[data-theme=dark] .ddcell{color:#6fb1e8}
+  html[data-theme=dark] .theme-btn{background:#2e3a52;color:#ffd76e}
+  html[data-theme=dark] .legend i{border-color:rgba(255,255,255,.2)}
 </style>
 </head>
 <body>
@@ -81,7 +94,7 @@
 <header>
   <h1>DIANA &amp; OCEAN PAL — FLEET EMPLOYMENT</h1>
   <span class="sub">January 2026 → December 2029 · report dated 10 June 2026 · P. G. Zafirakis</span>
-  <a class="chartlink" href="fleet-analytics-2026.html">📊 Analytics →</a>
+  <button id="themeBtn" class="theme-btn" title="Day / night mode">☀</button>
 </header>
 
 <div class="stats" id="stats"></div>
@@ -105,6 +118,7 @@
   <div class="tabs">
     <button id="tabTl" class="on">Timeline</button>
     <button id="tabTb">Table</button>
+    <a href="fleet-analytics-2026.html">Analytics</a>
   </div>
 </div>
 
@@ -128,6 +142,7 @@
 <footer>Source: FLEET EMPLOYMENT 2026.pdf — gross rates per day. Min/optional periods from the printed dates; drydock, off-hire and ETR blocks digitised from the chart (±a few days). AMPHITRITE window printed "31/4/2027" in the original.</footer>
 
 <script>
+document.documentElement.dataset.theme=localStorage.getItem('fleet-theme')||'light';
 // rf/rt = redelivery window (earliest = end of minimum period / latest = end of optional period)
 // dd = drydock/repairs [from,to]  | off = added off-hire | etr = probable redelivery tick | dely = expected delivery (newbuilding)
 const V = [
@@ -240,7 +255,7 @@ function monthHeader(){
   for(let y=2026;y<=2029;y++)for(let m=0;m<12;m++)
     mh+=`<div class="${m===0?'jan':''}" title="${MN[m]} ${y}">${L[m]}</div>`;
   return `<div class="tl-head"><div></div><div class="tl-years">${yh}</div></div>
-          <div class="tl-head"><div></div><div class="tl-months">${mh}</div></div>`;
+          <div class="tl-head"><div class="tl-corner">VESSEL</div><div class="tl-months">${mh}</div></div>`;
 }
 
 function renderTimeline(){
@@ -308,6 +323,15 @@ document.getElementById("tabTb").onclick=()=>{view="tb";
   document.getElementById("tabTb").classList.add("on");document.getElementById("tabTl").classList.remove("on");
   document.getElementById("viewTb").style.display="";document.getElementById("viewTl").style.display="none";render();};
 render();
+const themeBtn=document.getElementById("themeBtn");
+const setThemeIcon=()=>themeBtn.textContent=document.documentElement.dataset.theme==="dark"?"☾":"☀";
+themeBtn.onclick=()=>{
+  const t=document.documentElement.dataset.theme==="dark"?"light":"dark";
+  document.documentElement.dataset.theme=t;
+  localStorage.setItem('fleet-theme',t);
+  setThemeIcon();
+};
+setThemeIcon();
 </script>
 </body>
 </html>

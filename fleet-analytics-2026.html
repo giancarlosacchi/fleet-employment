@@ -27,6 +27,10 @@
   .kpi b{display:block;font-size:19px}
   .kpi span{font-size:12px;color:var(--muted)}
   footer{margin-top:14px;font-size:11px;color:var(--muted)}
+  .theme-btn{width:34px;height:34px;border-radius:50%;border:none;cursor:pointer;background:#f6a821;color:#fff;font-size:15px;line-height:34px;box-shadow:0 1px 3px rgba(0,0,0,.25);flex:0 0 auto}
+  html[data-theme=dark]{--bg:#0e1520;--card:#161f2c;--ink:#e4eaf3;--muted:#94a4b9;--line:#273245;--accent:#7fb6e8}
+  html[data-theme=dark] .why b{color:#c6d2e2}
+  html[data-theme=dark] .theme-btn{background:#2e3a52;color:#ffd76e}
   @media(max-width:900px){.grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -36,6 +40,7 @@
   <h1>FLEET ANALYTICS — DIANA &amp; OCEAN PAL</h1>
   <span class="sub">derived from the employment chart of 10 June 2026</span>
   <a href="index.html">← Employment chart</a>
+  <button id="themeBtn" class="theme-btn" title="Day / night mode">☀</button>
 </header>
 
 <div class="kpis" id="kpis"></div>
@@ -130,8 +135,16 @@ const TODAY=new Date("2026-06-10");
 const TYPES={ultra:"Ultramax",pmax:"Pmax/Kmx",postpmax:"Post-Pmx",cape:"Cape/Nmax"};
 const COL={ultra:"#8fbf6f",pmax:"#f5d442",postpmax:"#f5a86e",cape:"#7cc4dd"};
 const fmt=n=>n.toLocaleString("en-US");
+const THEME=localStorage.getItem('fleet-theme')||'light';
+document.documentElement.dataset.theme=THEME;
 Chart.defaults.font.family='"Segoe UI",system-ui,sans-serif';
-Chart.defaults.color="#3b4a5e";
+Chart.defaults.color=THEME==="dark"?"#cfd9e6":"#3b4a5e";
+Chart.defaults.borderColor=THEME==="dark"?"rgba(255,255,255,.12)":"rgba(0,0,0,.1)";
+const themeBtn=document.getElementById("themeBtn");
+themeBtn.textContent=THEME==="dark"?"☾":"☀";
+themeBtn.onclick=()=>{localStorage.setItem('fleet-theme',THEME==="dark"?"light":"dark");location.reload();};
+const ACC=THEME==="dark"?"#7fb6e8":"#1f4e79";
+const ACCBG=THEME==="dark"?"rgba(127,182,232,.15)":"rgba(31,78,121,.12)";
 
 // ---- KPIs ----
 const fixed=V.filter(v=>v.rateN);
@@ -176,7 +189,7 @@ const keys=monthKeys("2026-06","2028-06"), labels=monthLabels("2026-06","2028-06
 const firm=keys.map(k=>fixed.filter(v=>v.rf>k+"-15").reduce((s,v)=>s+v.rateN,0));
 const max=keys.map(k=>fixed.filter(v=>v.rt>k+"-15").reduce((s,v)=>s+v.rateN,0));
 new Chart(c2,{type:"line",data:{labels,datasets:[
- {label:"Minimum periods only",data:firm,borderColor:"#1f4e79",backgroundColor:"rgba(31,78,121,.12)",fill:true,tension:.3,pointRadius:0},
+ {label:"Minimum periods only",data:firm,borderColor:ACC,backgroundColor:ACCBG,fill:true,tension:.3,pointRadius:0},
  {label:"Incl. optional periods",data:max,borderColor:"#c92a2a",borderDash:[6,4],fill:false,tension:.3,pointRadius:0}]},
  options:{maintainAspectRatio:false,scales:{y:{ticks:{callback:v=>"$"+v/1000+"k"},title:{display:true,text:"committed gross $/day"}},x:{grid:{display:false}}},
  plugins:{tooltip:{callbacks:{label:c=>c.dataset.label+": $ "+fmt(c.parsed.y)}}}}});
@@ -198,7 +211,7 @@ const agg={};
 fixed.forEach(v=>{(agg[v.c]=agg[v.c]||{n:0,r:0,v:[]});agg[v.c].n++;agg[v.c].r+=v.rateN;agg[v.c].v.push(v.n);});
 const rows=Object.entries(agg).sort((a,b)=>b[1].r-a[1].r);
 new Chart(c4,{data:{labels:rows.map(r=>r[0]),datasets:[
- {type:"bar",label:"ships",data:rows.map(r=>r[1].n),backgroundColor:"#1f4e79",yAxisID:"y"},
+ {type:"bar",label:"ships",data:rows.map(r=>r[1].n),backgroundColor:ACC,yAxisID:"y"},
  {type:"line",label:"gross $/day",data:rows.map(r=>r[1].r),borderColor:"#c92a2a",backgroundColor:"#c92a2a",yAxisID:"y2",pointRadius:4}]},
  options:{maintainAspectRatio:false,
  scales:{x:{ticks:{maxRotation:60,minRotation:45,font:{size:10}},grid:{display:false}},
